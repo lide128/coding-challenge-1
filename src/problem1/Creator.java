@@ -10,6 +10,7 @@ import java.util.Random;
 
 /**
  * This class handles the creation and handling of the random data needed for the most populous year problem.
+ * And also handles most of the data output to console and file. File writing is formatted for unix.
  * Created by Alex White on 4/5/2017.
  */
 public class Creator {
@@ -40,7 +41,13 @@ public class Creator {
         Random rand = new Random();
 
         int deathYear = rand.nextInt(timeSpan.total);
-        int birthYear = rand.nextInt(deathYear);
+        int birthYear;
+        if(deathYear == timeSpan.start){
+            birthYear = 0;
+        }
+        else {
+            birthYear = rand.nextInt(deathYear);
+        }
 
         Range lifeRange = new Range(birthYear + timeSpan.start, deathYear + timeSpan.start);
         return lifeRange;
@@ -74,6 +81,10 @@ public class Creator {
         return name;
     }
 
+    /**
+     * A method to output the list of people to the console
+     * @param toPrint - the list of people to output to the console
+     */
     public static void printPersonList(ArrayList<Person> toPrint){
         for(Person dudeguy: toPrint){
             dudeguy.printPerson();
@@ -81,11 +92,11 @@ public class Creator {
     }
 
     /**
-     * A method to create a file with the data created and the most populous year written to it.
-     * @param toOutput      - the array list of people to output
+     * A method to wrtie a formatted string to a file.
      * @param populousYear  - the solution of the most populous year problem
+     * @param toWrite       - the formatted string to write to a file
      */
-    public static void outputPersonList(ArrayList<Person> toOutput, int populousYear){
+    public static void outputFile(int populousYear, String toWrite){
         Random rand = new Random();
         try {
             File output = new File("problem1_" + rand.nextInt(100) + ".txt");
@@ -95,15 +106,115 @@ public class Creator {
             FileOutputStream fileO = new FileOutputStream(output);
             OutputStreamWriter outputSW = new OutputStreamWriter(fileO);
             Writer w = new BufferedWriter(outputSW);
-            for(Person dudeguy: toOutput){
-                w.write(dudeguy.outputPerson());
-            }
+            w.write(toWrite);
             w.write("\n\nThe most populous year with this set of people is: " + populousYear);
             w.close();
         }
         catch(Exception e){
             System.out.println(e);
         }
+    }
+
+    /**
+     * A method to create a file with a list of people and the most populous year written to it.
+     * @param toOutput      - the array list of people to output
+     * @param populousYear  - the solution of the most populous year problem
+     */
+    public static void outputPersonList(ArrayList<Person> toOutput, int populousYear){
+        outputFile(populousYear, createPersonList(toOutput));
+    }
+
+    /**
+     * A method to create a file with a simple text chart representation of data.
+     * @param toOutput      - the array list of people to output
+     * @param populousYear  - the solution of the most populous year problem
+     */
+    public static void outputPersonChart(ArrayList<Person> toOutput, int populousYear, Range yearsToShow){
+        outputFile(populousYear, createPersonChart(toOutput, populousYear, yearsToShow));
+    }
+
+    /**
+     * A method to create a list of the people in question.
+     * @param toOutput - the array list of people to output
+     * @return
+     */
+    public static String createPersonList(ArrayList<Person> toOutput){
+        String personList = "\n";
+        for(Person dudeguy: toOutput){
+            personList += dudeguy.outputPerson();
+        }
+        return personList;
+    }
+
+    /**
+     * A method to create a simple text chart representing the data
+     * @param toOutput      - the array list of people to output
+     * @param populousYear  - the solution of the most populous year problem
+     * @return
+     */
+    public static String createPersonChart(ArrayList<Person> toOutput, int populousYear, Range yearsToShow){
+        String personChart = "\n";
+        int timeSpan = yearsToShow.total;
+        int start = yearsToShow.start;
+
+        for(Person dudeguy: toOutput){
+            personChart += nameFit(dudeguy);
+            for(int i = 0; i < timeSpan; i++){
+                if((i + start) >= dudeguy.birthYear && (i + start) <= dudeguy.deathYear){
+                    if(i == populousYear - start){
+                        personChart += "0";
+                    }
+                    else{
+                        personChart += "+";
+                    }
+                }
+                else{
+                    personChart += "-";
+                }
+            }
+        }
+        return personChart;
+    }
+
+    /**
+     * A method to correctly space person names in the text data chart.
+     * @param subject - the person who's name in which to fit
+     * @return
+     */
+    public static String nameFit(Person subject){
+        String outputString = "";
+        String nameAndDates = subject.outputPerson();
+        int nameLength = subject.fullName.length();
+        switch (nameLength){
+            case 2:
+                outputString += nameAndDates + "        ";
+                break;
+            case 3:
+                outputString += nameAndDates + "       ";
+                break;
+            case 4:
+                outputString += nameAndDates + "      ";
+                break;
+            case 5:
+                outputString += nameAndDates + "     ";
+                break;
+            case 6:
+                outputString += nameAndDates + "    ";
+                break;
+            case 7:
+                outputString += nameAndDates + "   ";
+                break;
+            case 8:
+                outputString += nameAndDates + "  ";
+                break;
+            case 9:
+                outputString += nameAndDates + " ";
+                break;
+            default:
+                outputString += nameAndDates;
+                break;
+        }
+        return outputString;
     }
 
 }
